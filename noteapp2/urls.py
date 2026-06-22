@@ -28,7 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # API routes
     path("auth/", include("apps.accounts.urls")),
-    path("notes/", include("apps.notes.urls")),
+    path("", include("apps.notes.urls")),
      path('', include('apps.accounts.urls')),
     path('', include('apps.notes.urls')),
 
