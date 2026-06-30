@@ -25,7 +25,11 @@ class NoteListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
+<<<<<<< HEAD
         fields = ["id", "title", "content", "is_important", "is_archived", "updated_at", "tags"]
+=======
+        fields = ["id", "title", "is_important", "is_archived", "updated_at", "tags"]
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         read_only_fields = ["id", "updated_at"]
 
 
@@ -112,6 +116,9 @@ class NoteDetailSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         self._process_tags(instance, tags_input)
         return instance
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e

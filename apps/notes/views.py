@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # apps/notes/api/views.py
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -14,22 +15,41 @@ from .serializers import (
     NoteListSerializer,
     NoteAttachmentSerializer,
     TagSerializer
+=======
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.db import transaction
+from rest_framework import viewsets, status, filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from .models import Note, NoteAttachment
+from .serializers import (
+    NoteDetailSerializer,
+    NoteListSerializer,
+    NoteAttachmentSerializer
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
 )
 from .permissions import IsOwner
 
 
+<<<<<<< HEAD
 # ==================== Note ViewSet ====================
 class NoteViewSet(viewsets.ModelViewSet):
     """
     ViewSet برای مدیریت یادداشت‌ها
     پشتیبانی از: CRUD, آرشیو, حذف نرم, عملیات گروهی
     """
+=======
+class NoteViewSet(viewsets.ModelViewSet):
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
     permission_classes = [IsOwner]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "content", "tags__name"]
     ordering_fields = ["updated_at", "created_at"]
 
     def get_serializer_class(self):
+<<<<<<< HEAD
         return NoteListSerializer if self.action == "list" else NoteDetailSerializer
 
     def get_queryset(self):
@@ -38,6 +58,14 @@ class NoteViewSet(viewsets.ModelViewSet):
         - جلوگیری از نمایش یادداشت‌های آرشیو شده در لیست اصلی
         - فرانت‌کار نیازی به تغییر ندارد چون خروجی نهایی یکسان است
         """
+=======
+        if self.action == "list":
+            return NoteListSerializer
+
+        return NoteDetailSerializer
+
+    def get_queryset(self):
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         queryset = (
             Note.objects
             .filter(user=self.request.user)
@@ -45,6 +73,7 @@ class NoteViewSet(viewsets.ModelViewSet):
             .prefetch_related("tags", "attachments")
         )
 
+<<<<<<< HEAD
         # سطل زباله: فقط یادداشت‌های حذف شده
         if self.action == "deleted":
             return queryset.filter(is_deleted=True)
@@ -74,12 +103,31 @@ class NoteViewSet(viewsets.ModelViewSet):
         - یادداشت به سطل زباله منتقل میشه
         - بدون تغییر در خروجی (همان 204 No Content)
         """
+=======
+        if self.action == "deleted":
+            return queryset.filter(is_deleted=True)
+
+        if self.action == "archived":
+            return queryset.filter(is_archived=True, is_deleted=False)
+
+        if self.action in ["restore", "hard_delete"]:
+            return queryset.filter(is_deleted=True)
+
+        return queryset.filter(is_deleted=False)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         instance = self.get_object()
         instance.is_deleted = True
         instance.deleted_at = timezone.now()
         instance.save(update_fields=["is_deleted", "deleted_at"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+<<<<<<< HEAD
     # ==================== عملیات تکی ====================
 
     @action(detail=True, methods=["post"])
@@ -100,11 +148,28 @@ class NoteViewSet(viewsets.ModelViewSet):
         note.is_archived = False
         note.archived_at = None
         note.save(update_fields=["is_deleted", "deleted_at", "is_archived", "archived_at"])
+=======
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def restore(self, request, pk=None):
+        note = get_object_or_404(
+            Note,
+            id=pk,
+            user=request.user,
+            is_deleted=True
+        )
+
+        note.is_deleted = False
+        note.deleted_at = None
+        note.save(update_fields=["is_deleted", "deleted_at"])
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         return Response({"status": "restored"})
 
     @action(detail=True, methods=["post"])
     @transaction.atomic
     def archive(self, request, pk=None):
+<<<<<<< HEAD
         """
         آرشیو کردن یادداشت
         - is_archived = True
@@ -160,10 +225,36 @@ class NoteViewSet(viewsets.ModelViewSet):
         لیست یادداشت‌های حذف شده (سطل زباله)
         - خروجی بدون تغییر
         """
+=======
+        note = self.get_object()
+        note.is_archived = True
+        note.archived_at = timezone.now()
+        note.is_deleted = False
+        note.save(update_fields=["is_archived", "archived_at", "is_deleted"])
+        return Response({"status": "archived"})
+
+    @action(detail=True, methods=["delete"])
+    @transaction.atomic
+    def hard_delete(self, request, pk=None):
+        note = get_object_or_404(
+            Note,
+            id=pk,
+            user=request.user,
+            is_deleted=True
+        )
+
+        note.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["get"])
+    def deleted(self, request):
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         return self._list_queryset(self.get_queryset())
 
     @action(detail=False, methods=["get"])
     def archived(self, request):
+<<<<<<< HEAD
         """
         لیست یادداشت‌های آرشیو شده
         - خروجی بدون تغییر
@@ -382,6 +473,16 @@ class NoteAttachmentViewSet(viewsets.ModelViewSet):
     """
     ViewSet برای مدیریت پیوست‌های یادداشت
     """
+=======
+        return self._list_queryset(self.get_queryset())
+
+    def _list_queryset(self, queryset):
+        serializer = NoteListSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class NoteAttachmentViewSet(viewsets.ModelViewSet):
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
     serializer_class = NoteAttachmentSerializer
     permission_classes = [IsOwner]
 
@@ -394,11 +495,16 @@ class NoteAttachmentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         note_id = self.request.data.get("note")
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         note = get_object_or_404(
             Note,
             id=note_id,
             user=self.request.user
         )
+<<<<<<< HEAD
         serializer.save(note=note)
 
 
@@ -418,3 +524,7 @@ class TagViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+=======
+
+        serializer.save(note=note)
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e

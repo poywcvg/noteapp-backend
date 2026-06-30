@@ -1,33 +1,50 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+<<<<<<< HEAD
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 # وارد کردن سریالایزرهای به‌روز شده
+=======
+from rest_framework_simplejwt.tokens import RefreshToken
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     UserSerializer,
     LogoutSerializer,
 )
+<<<<<<< HEAD
 from django.contrib.auth import get_user_model # برای دسترسی به مدل User سفارشی
 
 User = get_user_model() # دریافت مدل User سفارشی
+=======
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
 
 # ----------------------------------------
 # Register API
 # ----------------------------------------
 
 class RegisterAPIView(generics.CreateAPIView):
+<<<<<<< HEAD
     """
     API endpoint for user registration.
     Allows any user to register.
     """
+=======
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
+<<<<<<< HEAD
         """
         Overrides the default create method to return JWT tokens and user data upon successful registration.
         """
@@ -45,10 +62,27 @@ class RegisterAPIView(generics.CreateAPIView):
             "message": "User registered successfully!"
         }
         
+=======
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.save()
+
+        refresh = RefreshToken.for_user(user)
+
+        response_data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": UserSerializer(user).data,
+            "message": "User registered successfully!"
+        }
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 # ----------------------------------------
+<<<<<<< HEAD
 # Login API (JWT)
 # ----------------------------------------
 
@@ -68,6 +102,19 @@ class LoginAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         
         # سریالایزر اعتبارسنجی شده شامل اطلاعات کاربر و توکن ها است
+=======
+# Login API
+# ----------------------------------------
+
+class LoginAPIView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         user = serializer.validated_data.get("user")
         access_token = serializer.validated_data.get("access_token")
         refresh_token = serializer.validated_data.get("refresh_token")
@@ -75,13 +122,20 @@ class LoginAPIView(APIView):
         response_data = {
             "refresh": refresh_token,
             "access": access_token,
+<<<<<<< HEAD
             "user": UserSerializer(user).data # اطلاعات کاربر لاگین شده
         }
         
+=======
+            "user": UserSerializer(user).data
+        }
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
         return Response(response_data, status=status.HTTP_200_OK)
 
 
 # ----------------------------------------
+<<<<<<< HEAD
 # Current User (Me) API
 # ----------------------------------------
 
@@ -113,12 +167,37 @@ class MeAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save() # متد save در UserSerializer فراخوانی می شود
         return Response(serializer.data)
+=======
+# Current User API
+# ----------------------------------------
+
+class MeAPIView(generics.GenericAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
 
 
 # ----------------------------------------
 # Logout API
 # ----------------------------------------
 
+<<<<<<< HEAD
 class LogoutAPIView(APIView):
     """
     API endpoint for user logout.
@@ -137,3 +216,15 @@ class LogoutAPIView(APIView):
         
         # بازگرداندن پاسخ موفقیت آمیز بدون محتوا (204 No Content)
         return Response(status=status.HTTP_204_NO_CONTENT)
+=======
+class LogoutAPIView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e

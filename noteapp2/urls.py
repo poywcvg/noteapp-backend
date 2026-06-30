@@ -28,8 +28,16 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # API routes
     path("auth/", include("apps.accounts.urls")),
+<<<<<<< HEAD
     path("notes/", include("apps.notes.urls")),
      path('', include('apps.accounts.urls')),
+=======
+    path("", include("apps.notes.urls")),
+     path('', include('apps.accounts.urls')),
+    path('', include('apps.notes.urls')),
+
+
+>>>>>>> 9189de6f6e0efed64d09b8bbd24ee2ef0702541e
     # مسیر دریافت فایل Schema (فرمت YAML/JSON)
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     
